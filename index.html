@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IM101 Quiz</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f8f9fa; padding: 20px; }
+    .question-box { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .result-item { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .correct-answer { color: #198754; font-weight: bold; }
+    .your-answer { color: #dc3545; }
+    #resultsSection { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- QUIZ SECTION -->
+    <div id="quizSection">
+      <h2 class="text-center mb-4">IM101 Prelim Quiz</h2>
+      <p class="text-center text-muted">Answer all 50 questions, then click Submit.</p>
+
+      <form id="quizForm">
+        <!-- Questions inserted by JS -->
+      </form>
+
+      <div class="text-center mt-4">
+        <button type="button" class="btn btn-primary btn-lg" onclick="submitQuiz()">Submit Answers</button>
+      </div>
+    </div>
+
+    <!-- RESULTS SECTION -->
+    <div id="resultsSection">
+      <h2 class="text-center mb-4">📝 Quiz Results</h2>
+      <div id="scoreSummary" class="text-center mb-4"></div>
+      <div id="resultsList"></div>
+      <div class="text-center mt-4">
+        <button class="btn btn-outline-primary" onclick="location.reload()">Retake Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      { q: "What was the primary method of data storage before the 1950s?", a: "Cloud databases", b: "Relational tables", c: "Manual ledgers and filing cabinets", d: "NoSQL systems", correct: "C", explanation: "Module 1 states that the Pre-Digital Era relied on physical records like ledgers and filing cabinets." },
+      { q: "Which database model arranges data in a tree-like structure with parent-child relationships?", a: "Relational", b: "Network", c: "Hierarchical", d: "Object-Oriented", correct: "C", explanation: "Module 1: Hierarchical databases (e.g., IBM’s IMS, 1966) used a tree structure." },
+      { q: "Who introduced the relational model in 1970?", a: "Bill Gates", b: "Larry Ellison", c: "Edgar F. Codd", d: "Alan Turing", correct: "C", explanation: "Edgar F. Codd, an IBM researcher, proposed the relational model in 1970." },
+      { q: "Which of the following is NOT a relational database?", a: "MySQL", b: "Oracle", c: "MongoDB", d: "Microsoft SQL Server", correct: "C", explanation: "MongoDB is a NoSQL, document-oriented database." },
+      { q: "What does SQL stand for?", a: "Simple Query Language", b: "Structured Question Logic", c: "System Quality Language", d: "Structured Query Language", correct: "D", explanation: "SQL = Structured Query Language — standard for relational databases." },
+      { q: "Which era saw the rise of web databases due to internet growth?", a: "1950s", b: "1970s", c: "1990s", d: "2010s", correct: "C", explanation: "Module 1: The 1990s brought dynamic websites using PHP + MySQL." },
+      { q: "NoSQL databases are best suited for:", a: "Highly structured financial records", b: "Small school enrollment systems", c: "Large volumes of unstructured or semi-structured data", d: "Systems requiring strict ACID compliance", correct: "C", explanation: "Module 2: NoSQL handles big, unstructured data (e.g., social media)." },
+      { q: "Which database type stores data in columns instead of rows for analytics efficiency?", a: "Graph", b: "Time-Series", c: "Columnar", d: "In-Memory", correct: "C", explanation: "Module 2: Columnar databases optimize analytics by storing column-wise." },
+      { q: "What is the main purpose of normalization?", a: "To increase data redundancy", b: "To speed up all queries", c: "To reduce redundancy and prevent update anomalies", d: "To encrypt sensitive data", correct: "C", explanation: "Module 2: Normalization eliminates duplicates and ensures consistency." },
+      { q: "Which normal form ensures no partial dependency on a composite key?", a: "1NF", b: "2NF", c: "3NF", d: "BCNF", correct: "B", explanation: "2NF requires all non-key attributes to depend on the entire primary key." },
+      { q: "A graph database is ideal for modeling:", a: "Product inventory", b: "Employee payroll", c: "Social network connections", d: "Daily sales reports", correct: "C", explanation: "Module 2: Graph DBs excel at complex relationships like social networks." },
+      { q: "Which database stores data in RAM for ultra-fast access?", a: "Time-Series", b: "Spatial", c: "In-Memory", d: "Distributed", correct: "C", explanation: "Module 2: In-memory databases (e.g., Redis) use RAM for speed." },
+      { q: "What is a key benefit of distributed databases?", a: "Simpler backup procedures", b: "Lower hardware cost", c: "Improved performance, fault tolerance, and scalability", d: "Easier normalization", correct: "C", explanation: "Module 2 lists these as core advantages of distributed systems." },
+      { q: "Which data type is best for storing a product price like 199.99?", a: "INT", b: "FLOAT", c: "DECIMAL(10,2)", d: "VARCHAR(10)", correct: "C", explanation: "DECIMAL ensures exact precision; FLOAT can cause rounding errors." },
+      { q: "Why should you include audit trail columns (e.g., created_at)?", a: "To reduce table size", b: "To track who changed data and when", c: "To replace primary keys", d: "To enable automatic backups", correct: "B", explanation: "Module 2 recommends audit columns for tracking changes." },
+      { q: "Which decade saw the commercialization of RDBMS like Oracle and DB2?", a: "1960s", b: "1970s", c: "1980s", d: "1990s", correct: "C", explanation: "Module 1: The 1980s brought commercial RDBMS and SQL standardization." },
+      { q: "NewSQL databases aim to combine:", a: "NoSQL flexibility with graph traversal", b: "RDBMS reliability (ACID) with NoSQL scalability", c: "In-memory speed with time-series indexing", d: "Spatial queries with object modeling", correct: "B", explanation: "Module 2: NewSQL merges ACID compliance with horizontal scalability." },
+      { q: "What is the main use of a spatial database?", a: "Storing user passwords", b: "Managing hospital patient records", c: "Handling geographic/GIS data", d: "Logging website visits", correct: "C", explanation: "Module 2: Spatial DBs manage location-based data for GIS/mapping." },
+      { q: "Which is a characteristic of 1NF (First Normal Form)?", a: "No transitive dependencies", b: "All attributes depend on the full primary key", c: "Atomic values and no repeating groups", d: "Foreign keys must reference valid rows", correct: "C", explanation: "1NF requires single (atomic) values and no arrays/lists." },
+      { q: "In a relational database, tables are linked using:", a: "File paths", b: "Color codes", c: "Primary and foreign keys", d: "Timestamps", correct: "C", explanation: "Relationships are established via primary and foreign keys." },
+      { q: "Which technology enabled dynamic websites in the 1990s?", a: "Blockchain", b: "AI-driven queries", c: "PHP + MySQL", d: "GraphQL", correct: "C", explanation: "Module 1 cites PHP + MySQL as key for dynamic web content." },
+      { q: "What problem does normalization help avoid?", a: "Slow internet connection", b: "Update anomalies", c: "Weak passwords", d: "Broken hyperlinks", correct: "B", explanation: "Without normalization, updates may be inconsistent across duplicates." },
+      { q: "Which database model allows many-to-many relationships without a relational structure?", a: "Hierarchical", b: "Relational", c: "Network", d: "Object-Oriented", correct: "C", explanation: "Module 1: Network model (CODASYL, 1969) supported many-to-many links." },
+      { q: "Time-series databases are optimized for data indexed by:", a: "Name", b: "Location", c: "Time", d: "Category", correct: "C", explanation: "Module 2: They handle data points 'indexed by time' (e.g., sensors)." },
+      { q: "Documentation of table purposes and relationships is important because it:", a: "Reduces server cost", b: "Helps developers and admins understand the system", c: "Automatically generates ERD diagrams", d: "Encrypts sensitive columns", correct: "B", explanation: "Module 2 lists documentation as essential for team understanding." },
+      { q: "Which is NOT a recommended practice in table design?", a: "Choosing appropriate data types", b: "Ignoring expected data volume", c: "Applying normalization", d: "Including audit columns", correct: "B", explanation: "Module 2 says to consider data volume and performance." },
+      { q: "The first commercial SQL database was:", a: "MySQL", b: "Microsoft SQL Server", c: "Oracle", d: "PostgreSQL", correct: "C", explanation: "Module 1: Oracle (1979) was the first commercial SQL database." },
+      { q: "Object-oriented databases are suitable when:", a: "Data is simple and flat", b: "You need fast text searches", c: "Data has complex structures modeled as objects", d: "You only store dates and numbers", correct: "C", explanation: "Module 2: They’re ideal for complex object-based data." },
+      { q: "Partitioning large tables can improve:", a: "Data encryption", b: "User interface design", c: "Query performance and management", d: "Internet speed", correct: "C", explanation: "Module 2: Partitioning enhances performance and simplifies maintenance." },
+      { q: "Testing table design with real-world data helps:", a: "Reduce electricity usage", b: "Identify issues early in development", c: "Automatically deploy to cloud", d: "Generate marketing reports", correct: "B", explanation: "Module 2 emphasizes testing to catch problems before launch." },
+      { q: "Which database type would best support a ride-sharing app’s real-time location tracking?", a: "Hierarchical", b: "Spatial + Time-Series", c: "Relational only", d: "Object-Oriented", correct: "B", explanation: "Spatial handles location; time-series tracks movement over time." },
+      { q: "ACID compliance is most associated with:", a: "NoSQL databases", b: "Relational databases", c: "File-based systems", d: "Blockchain ledgers", correct: "B", explanation: "RDBMS guarantee ACID for reliable transactions." },
+      { q: "In MySQL, which command creates a new database?", a: "INSERT DATABASE", b: "NEW DB", c: "CREATE DATABASE", d: "MAKE DATABASE", correct: "C", explanation: "Standard SQL syntax: CREATE DATABASE dbname;" },
+      { q: "A primary key must be:", a: "Optional", b: "Unique and non-null", c: "Always numeric", d: "Shared across tables", correct: "B", explanation: "Primary keys uniquely identify each row and cannot be NULL." },
+      { q: "Which is a disadvantage of hierarchical databases?", a: "Too flexible", b: "Cannot represent many-to-many relationships easily", c: "Too slow for modern use", d: "Requires AI to operate", correct: "B", explanation: "Hierarchical models only support one-to-many relationships." },
+      { q: "Cloud databases like Amazon RDS became popular in the:", a: "1980s", b: "1990s", c: "2000s", d: "2010s", correct: "D", explanation: "Module 1: The 2010s saw the rise of cloud databases." },
+      { q: "Which factor should influence your choice of data type?", a: "Font color in phpMyAdmin", b: "Expected data size and precision", c: "Number of website visitors", d: "Operating system version", correct: "B", explanation: "Module 2: Consider data size, precision, and type." },
+      { q: "Redundancy in a database leads to:", a: "Faster backups", b: "Wasted storage and inconsistency", c: "Better security", d: "Simpler queries", correct: "B", explanation: "Duplicate data wastes space and risks inconsistency." },
+      { q: "An ERD (Entity-Relationship Diagram) is used during:", a: "Data deletion", b: "Database design phase", c: "User login", d: "Web hosting", correct: "B", explanation: "ERDs model entities and relationships during planning." },
+      { q: "Which database evolved to handle big data from social media?", a: "Oracle", b: "MySQL", c: "MongoDB", d: "IBM DB2", correct: "C", explanation: "Module 1: NoSQL like MongoDB emerged for big, unstructured data." },
+      { q: "What does “data independence” mean?", a: "Data works without electricity", b: "Applications aren’t affected by changes in storage structure", c: "Each user owns their own data copy", d: "Data never changes", correct: "B", explanation: "This is a core DBMS feature—logical/physical independence." },
+      { q: "Which is true about foreign keys?", a: "They must be unique", b: "They link to a primary key in another table", c: "They replace primary keys", d: "They store images", correct: "B", explanation: "Foreign keys reference primary keys in related tables." },
+      { q: "The main goal of database design is to balance:", a: "Color schemes and fonts", b: "Normalization, performance, and usability", c: "Internet speed and screen size", d: "User passwords and emails", correct: "B", explanation: "Module 2: Balance normalization, performance, and usability." },
+      { q: "Which database would best detect fraud in banking transactions?", a: "Relational", b: "Graph", c: "Time-Series", d: "Columnar", correct: "B", explanation: "Graph DBs analyze complex relationships—ideal for fraud detection." },
+      { q: "In PHP + MySQL projects, why use prepared statements?", a: "To make pages load faster", b: "To prevent SQL injection attacks", c: "To auto-generate ERD", d: "To reduce file size", correct: "B", explanation: "Prepared statements block malicious input—security best practice." },
+      { q: "Which is a key feature of MySQL?", a: "It’s a NoSQL database", b: "It’s proprietary and expensive", c: "It’s open-source and relational", d: "It only runs on Windows", correct: "C", explanation: "Module 1: MySQL (1995) is open-source and relational." },
+      { q: "Data integrity ensures that data is:", a: "Backed up daily", b: "Accurate and consistent", c: "Stored in the cloud", d: "Encrypted at all times", correct: "B", explanation: "Integrity means data is correct, valid, and reliable." },
+      { q: "Concurrency control allows:", a: "Only one user to access the database", b: "Multiple users to safely access data simultaneously", c: "Automatic data deletion", d: "Faster internet connection", correct: "B", explanation: "Prevents conflicts during simultaneous access." },
+      { q: "Scalability in databases refers to the ability to:", a: "Change colors dynamically", b: "Handle growth in data/users without crashing", c: "Print reports automatically", d: "Connect to social media", correct: "B", explanation: "Module 2 includes scalability as a key design consideration." },
+      { q: "Which practice supports “data redundancy reduction”?", a: "Copying tables daily", b: "Storing the same address in 10 tables", c: "Applying normalization (1NF, 2NF, 3NF)", d: "Using longer column names", correct: "C", explanation: "Normalization organizes data to eliminate duplicates." }
+    ];
+
+    // Render questions
+    const form = document.getElementById('quizForm');
+    questions.forEach((q, i) => {
+      form.innerHTML += `
+        <div class="question-box">
+          <strong>${i + 1}. ${q.q}</strong><br><br>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="q${i}" value="A" id="q${i}a" required>
+            <label class="form-check-label" for="q${i}a">A. ${q.a}</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="q${i}" value="B" id="q${i}b">
+            <label class="form-check-label" for="q${i}b">B. ${q.b}</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="q${i}" value="C" id="q${i}c">
+            <label class="form-check-label" for="q${i}c">C. ${q.c}</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="q${i}" value="D" id="q${i}d">
+            <label class="form-check-label" for="q${i}d">D. ${q.d}</label>
+          </div>
+        </div>
+      `;
+    });
+
+    function submitQuiz() {
+      let score = 0;
+      const total = questions.length;
+      let resultsHTML = '';
+
+      for (let i = 0; i < questions.length; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const ua = selected ? selected.value : '–';
+        const isCorrect = ua === questions[i].correct;
+        if (isCorrect) score++;
+
+        const choices = { A: questions[i].a, B: questions[i].b, C: questions[i].c, D: questions[i].d };
+        const correctText = `${questions[i].correct}. ${choices[questions[i].correct]}`;
+
+        resultsHTML += `
+          <div class="result-item">
+            <strong>${i + 1}. ${questions[i].q}</strong><br><br>
+            <span class="your-answer">Your answer: ${ua}. ${choices[ua] || ''}</span><br>
+            <span class="correct-answer">Correct answer: ${correctText}</span><br><br>
+            <em>📘 Explanation:</em> ${questions[i].explanation}
+          </div>
+        `;
+      }
+
+      document.getElementById('scoreSummary').innerHTML = `
+        <h4>Your Score: ${score} / ${total}</h4>
+        <p>${score >= total / 2 ? '✅ Good job!' : '📚 Review the explanations below.'}</p>
+        <hr>
+      `;
+      document.getElementById('resultsList').innerHTML = resultsHTML;
+
+      // Show results, hide quiz
+      document.getElementById('quizSection').style.display = 'none';
+      document.getElementById('resultsSection').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
