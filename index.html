@@ -8,9 +8,32 @@
   <style>
     body { background: #f8f9fa; padding: 20px; }
     .question-box { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-    .result-item { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-    .correct-answer { color: #198754; font-weight: bold; }
-    .your-answer { color: #dc3545; }
+    .result-item { 
+      background: white; 
+      border-radius: 8px; 
+      padding: 16px; 
+      margin-bottom: 16px; 
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1); 
+    }
+    .correct-answer { 
+      color: #198754; 
+      font-weight: bold;
+      background-color: #d1e7dd;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .wrong-answer { 
+      color: #dc3545; 
+      font-weight: bold;
+      background-color: #f8d7da;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .your-answer-label { 
+      display: block;
+      margin-top: 6px;
+      font-weight: bold;
+    }
     #resultsSection { display: none; }
   </style>
 </head>
@@ -134,12 +157,18 @@
 
         const choices = { A: questions[i].a, B: questions[i].b, C: questions[i].c, D: questions[i].d };
         const correctText = `${questions[i].correct}. ${choices[questions[i].correct]}`;
+        const yourAnswerText = ua !== '–' ? `${ua}. ${choices[ua]}` : 'No answer';
+
+        // Highlight your answer based on correctness
+        const yourAnswerClass = isCorrect ? 'correct-answer' : 'wrong-answer';
 
         resultsHTML += `
           <div class="result-item">
             <strong>${i + 1}. ${questions[i].q}</strong><br><br>
-            <span class="your-answer">Your answer: ${ua}. ${choices[ua] || ''}</span><br>
-            <span class="correct-answer">Correct answer: ${correctText}</span><br><br>
+            <span class="your-answer-label">Your answer:</span>
+            <span class="${yourAnswerClass}">${yourAnswerText}</span><br>
+            <span class="your-answer-label">Correct answer:</span>
+            <span class="correct-answer">${correctText}</span><br><br>
             <em>📘 Explanation:</em> ${questions[i].explanation}
           </div>
         `;
@@ -147,7 +176,8 @@
 
       document.getElementById('scoreSummary').innerHTML = `
         <h4>Your Score: ${score} / ${total}</h4>
-        <p>${score >= total / 2 ? '✅ Good job!' : '📚 Review the explanations below.'}</p>
+        <p>${score >= total / 2 ? '✅ Great job!' : '📚 Keep reviewing — you’re learning!'}<br>
+        Scroll down to see detailed feedback.</p>
         <hr>
       `;
       document.getElementById('resultsList').innerHTML = resultsHTML;
